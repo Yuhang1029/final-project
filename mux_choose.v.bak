@@ -1,0 +1,25 @@
+module mux_choose(ADDR, x, y, w, j)
+
+input[9:0] x, y, w;
+reg [9:0] x_now,  y_now;
+reg [18:0] ADDR;
+output j;
+
+always@(ADDR)
+begin
+	x_now = ADDR / 640;
+	y_now = ADDR % 640;
+	
+	if(x_now >= x_basic && x_now <= x_basic + w && y_now >= y_basic && y_now <= y_basic + w)
+		begin
+			assign j = 1;
+		end
+		
+	else
+		begin
+			assign j = 0;
+		end
+end
+endmodule
+
+	
