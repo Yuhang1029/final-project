@@ -9,21 +9,57 @@ reg j, clk_out;
 output j;
 integer index;
 
-
-reg [15:0] x;
+reg [2:0] c;
+reg [15:0] x, y, w;
 reg [15:0] x1;
-reg [15:0] y;
-reg [15:0] w;
 reg reach;
 
 initial
+begin
+	c = 3'b000;
+	w = 16'd20;
+	x = 16'b0;
+	y = 16'b0;
+end
+
+
+/*generate 
+for(i = 0; i < 3; i=i+1)
+begin: for_loop
+	c = i;
+end
+endgenerate*/
+/*
+always @(*)
+  begin
+    case (c)
+      3'b000  :  begin 
+						w = 16'b0000100000;
+						end
+		
+      3'b001  : 	begin 
+						w = 16'b0001000000;
+						end
+		
+		
+      3'b010  : 	begin 
+						w = 16'b0000001000;
+						end
+						
+      default : 	begin 
+						w = 16'b0000000010;
+						end
+    endcase
+  end
+*/
+/*initial
 begin
 	x = 16'b0;
 	y = 16'b0;
 	w = 16'b0000100000;
 	index = 0;
 	reach = 0;
-end
+end*/
 
 //x control the left and right
 //y control the up and down
@@ -80,6 +116,7 @@ begin
 		y = 16'b0;
 		reach = 1'b1;
 		x1 = x;
+		//c = c + 1;
 	end
 end
 
@@ -98,13 +135,18 @@ begin
 	end
 end
 
+/*
+wire j1, j2;
+diff_s1 d1(x, y, w, j1, y_now, x_now);
+diff_s2 d2(x, y, w, j2, y_now, x_now);
+*/
 
 
 always@(ADDR)
 begin
 	y_now = ADDR / 12'h280; //pixel
 	x_now = ADDR % 12'h280;	//pixel
-	
+	/*
 	if(x_now > x && x_now < x + w && y_now > y && y_now < y + w)
 	begin
 		j = 1'b1;
@@ -119,6 +161,46 @@ begin
 	begin
 		j = 1'b0;
 	end
+	*/
+	case (c)
+      3'b000  : 
+		begin 
+			if(x_now > x && x_now < x + 16'd40 && y_now > y && y_now < y + 16'd40)
+			begin
+				j = 1'b1;
+			end
+		
+			else
+			begin
+				j = 1'b0;
+			end
+										
+		end
+		
+      3'b001  : 	
+		begin 
+		if(x_now > x && x_now < x + 16'd80 && y_now > y && y_now < y + 16'd20)
+			begin
+				j = 1'b1;
+			end
+		
+			else
+			begin
+				j = 1'b0;
+			end
+		end
+		
+		
+      3'b010  : 	begin 
+						w = 16'b0000001000;
+						end
+						
+      default : 	begin 
+						w = 16'b0000000010;
+						end
+    endcase
+	
+	
 end
 endmodule
 
