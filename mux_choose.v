@@ -11,13 +11,11 @@ integer index;
 
 reg [2:0] c;
 reg [15:0] x, y, w;
-reg [15:0] x1;
-reg reach;
 
 initial
 begin
 	c = 3'b000;
-	w = 16'd20;
+	w = 40;
 	x = 16'b0;
 	y = 16'b0;
 end
@@ -82,55 +80,155 @@ begin
 end
 
 
-/*
-always @ (posedge clk_out)
-begin
-	if((right == 0) && (x + w < 16'h0280))
-	begin
-		x = x + 1;
-	end
-	if((left == 0) && (x > 16'h0000))
-	begin
-		x = x - 1;
-	end
-	if((up == 0) && (y > 16'h0000))
-	begin
-		y = y - 1;
-	end
-	if((down == 0) && (y + w < 16'h01E0))
-	begin
-		y = y + 1;
-	end
-end
-*/
 
 always @ (posedge clk_out)
 begin
-	if(y + w < 16'h01E0)
+	if(c == 3'b000)
 	begin
-		y = y + 4'd1;
+		if(y + 16'd80 < 16'd480)
+		begin
+			y = y + 4'd1;
+		end
+	
+		else
+		begin
+			y = 16'b0;
+			c = 3'b001;
+		end
 	end
 	
-	else
+	if(c == 3'b001)
 	begin
-		y = 16'b0;
-		reach = 1'b1;
-		x1 = x;
-		//c = c + 1;
+		if(y + 16'd80 < 16'd480)
+		begin
+			y = y + 4'd1;
+		end
+	
+		else
+		begin
+			y = 16'b0;
+			c = 3'b010;
+		end
+	end
+	
+	if(c == 3'b010)
+	begin
+		if(y + 16'd40 < 16'd480)
+		begin
+			y = y + 4'd1;
+		end
+	
+		else
+		begin
+			y = 16'b0;
+			c = 3'b011;
+		end
+	end
+	
+	if(c == 3'b011)
+	begin
+		if(y + 16'd80 < 16'd480)
+		begin
+			y = y + 4'd1;
+		end
+	
+		else
+		begin
+			y = 16'b0;
+			c = 3'b100;
+		end
+	end
+	
+	if(c == 3'b100)
+	begin
+		if(y + 16'd80 < 16'd480)
+		begin
+			y = y + 4'd1;
+		end
+	
+		else
+		begin
+			y = 16'b0;
+			c = 3'b000;
+		end
 	end
 end
+
 
 always @ (posedge key_p)
 begin
-	if(y + w < 16'h01E0)
+	if(c == 3'b000)
 	begin
-		if((key_in == 8'h74) && (x + w < 16'h0280))
+		if(y + 16'd80 < 16'd480)
 		begin
-			x = x + 4'd5;
+			if((key_in == 8'h74) && (x + 16'd80 < 16'd640))
+			begin
+				x = x + 16'd40;
+			end
+			if((key_in == 8'h6b) && (x > 16'h0000))
+			begin
+				x = x - 16'd40;
+			end
 		end
-		if((key_in == 8'h6b) && (x > 16'h0000))
+	end
+	
+	if(c == 3'b001)
+	begin
+		if(y + 16'd80 < 16'd480)
 		begin
-			x = x - 4'd5;
+			if((key_in == 8'h74) && (x + 16'd160 < 16'd640))
+			begin
+				x = x + 16'd40;
+			end
+			if((key_in == 8'h6b) && (x > 16'h0000))
+			begin
+				x = x - 16'd40;
+			end
+		end
+	end
+	
+	if(c == 3'b010)
+	begin
+		if(y + 16'd40 < 16'd480)
+		begin
+			if((key_in == 8'h74) && (x + 16'd160 < 16'd640))
+			begin
+				x = x + 16'd40;
+			end
+			if((key_in == 8'h6b) && (x > 16'h0000))
+			begin
+				x = x - 16'd40;
+			end
+		end
+	end
+	
+	if(c == 3'b011)
+	begin
+		if(y + 16'd80 < 16'd480)
+		begin
+			if((key_in == 8'h74) && (x + 16'd120 < 16'd640))
+			begin
+				x = x + 16'd40;
+			end
+			if((key_in == 8'h6b) && (x > 16'h0000))
+			begin
+				x = x - 16'd40;
+			end
+		end
+	end
+	
+	if(c == 3'b100)
+	begin
+		if(y + 16'd80 < 16'd480)
+		begin
+			if((key_in == 8'h74) && (x + 16'd120 < 16'd640))
+			begin
+				x = x + 16'd40;
+			end
+			if((key_in == 8'h6b) && (x > 16'h0000))
+			begin
+				x = x - 16'd40;
+			end
 		end
 	end
 end
@@ -146,26 +244,11 @@ always@(ADDR)
 begin
 	y_now = ADDR / 12'h280; //pixel
 	x_now = ADDR % 12'h280;	//pixel
-	/*
-	if(x_now > x && x_now < x + w && y_now > y && y_now < y + w)
-	begin
-		j = 1'b1;
-	end
 	
-	else if(reach == 1'b1 && x_now > x1 && x_now < x1 + w && y_now > 16'h01E0 - w && y_now < 16'h01E0)
-	begin
-		j = 1'b1;
-	end
-		
-	else
-	begin
-		j = 1'b0;
-	end
-	*/
 	case (c)
       3'b000  : 
 		begin 
-			if(x_now > x && x_now < x + 16'd40 && y_now > y && y_now < y + 16'd40)
+			if(x_now > x && x_now < x + 16'd80 && y_now > y && y_now < y + 16'd80)
 			begin
 				j = 1'b1;
 			end
@@ -179,7 +262,21 @@ begin
 		
       3'b001  : 	
 		begin 
-		if(x_now > x && x_now < x + 16'd80 && y_now > y && y_now < y + 16'd20)
+		if(x_now > x && x_now < x + 16'd160 && y_now > y && y_now < y + 16'd80)
+			begin
+				j = 1'b1;
+			end
+		
+		else
+			begin
+				j = 1'b0;
+			end
+		end
+		
+		
+      3'b010  : 
+		begin 
+		if(x_now > x && x_now < x + 16'd160 && y_now > y && y_now < y + 16'd40)
 			begin
 				j = 1'b1;
 			end
@@ -190,10 +287,41 @@ begin
 			end
 		end
 		
+		3'b011  : 
+		begin 
+		if(x_now > x && x_now < x + 16'd40 && y_now > y && y_now < y + 16'd40)
+			begin
+				j = 1'b1;
+			end
+			
+		else if(x_now > x && x_now < x + 16'd120 && y_now >= y + 16'd40 && y_now < y + 16'd80)
+			begin
+				j = 1'b1;
+			end
+			
+		else
+			begin
+				j = 1'b0;
+			end
+		end
 		
-      3'b010  : 	begin 
-						w = 16'b0000001000;
-						end
+		3'b100  :
+		begin 
+		if(x_now > x + 16'd40 && x_now < x + 16'd80 && y_now > y && y_now < y + 16'd40)
+			begin
+				j = 1'b1;
+			end
+			
+		else if(x_now > x && x_now < x + 16'd120 && y_now >= y + 16'd40 && y_now < y + 16'd80)
+			begin
+				j = 1'b1;
+			end
+			
+		else
+			begin
+				j = 1'b0;
+			end
+		end
 						
       default : 	begin 
 						w = 16'b0000000010;
