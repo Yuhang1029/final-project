@@ -50,6 +50,7 @@ module skeleton(resetn,
 	wire	[7:0]	 ps2_key_data;
 	wire			 ps2_key_pressed;
 	wire	[7:0]	 ps2_out;
+	wire [7:0] s;
 	reg [7:0] change;
 	
 	// clock divider (by 5, i.e., 10 MHz)
@@ -63,44 +64,14 @@ module skeleton(resetn,
 	processor myprocessor(clock, ~resetn, /*ps2_key_pressed, ps2_out, lcd_write_en, lcd_write_data,*/ debug_data_in, debug_addr);
 	
 	// keyboard controller
-	PS2_Interface myps2(clock, resetn, ps2_clock, ps2_data, ps2_key_data, ps2_key_pressed, ps2_out);
-	
-	/*always@(*)
-	begin
-		if(ps2_out == 8'h75)
-		begin
-			change = 8'h12;
-		end
-		
-		else if(ps2_out == 8'h33)
-		begin
-			change = 8'h48;
-		end
-		
-		else if(ps2_out == 8'h23)
-		begin
-			change = 8'h44;
-		end
-		
-		else if(ps2_out == 8'h34)
-		begin
-			change = 8'h47;
-		end
-		
-		else
-		begin
-			change = ps2_out;
-		end
-	end*/
-	
-			
+	PS2_Interface myps2(clock, resetn, ps2_clock, ps2_data, ps2_key_data, ps2_key_pressed, ps2_out);		
 	
 	// lcd controller
-	lcd mylcd(clock, ~resetn, 1'b1, ps2_out, lcd_data, lcd_rw, lcd_en, lcd_rs, lcd_on, lcd_blon);
+	lcd mylcd(clock, ~resetn, 1'b1, s, lcd_data, lcd_rw, lcd_en, lcd_rs, lcd_on, lcd_blon);
 	
 	// example for sending ps2 data to the first two seven segment displays
-	Hexadecimal_To_Seven_Segment hex1(ps2_out[3:0], seg1);
-	Hexadecimal_To_Seven_Segment hex2(ps2_out[7:4], seg2);
+	Hexadecimal_To_Seven_Segment hex1(s[3:0], seg1);
+	Hexadecimal_To_Seven_Segment hex2(s[7:4], seg2);
 	
 	// the other seven segment displays are currently set to 0
 	Hexadecimal_To_Seven_Segment hex3(4'b0, seg3);
@@ -129,7 +100,8 @@ module skeleton(resetn,
 								 .left(LEFT),
 								 .right(RIGHT),*/
 								 .key_p(ps2_key_pressed),
-								 .key_in(ps2_out));
+								 .key_in(ps2_out),
+								 .score(s));
 	
 	
 endmodule

@@ -7,7 +7,8 @@ module vga_controller(iRST_n,
                       g_data,
                       r_data,
 							 key_p,
-							 key_in);
+							 key_in,
+							 score);
 
 	
 input iRST_n;
@@ -19,16 +20,19 @@ output reg oHS;
 output reg oVS;
 output [7:0] b_data;
 output [7:0] g_data;  
-output [7:0] r_data;                        
+output [7:0] r_data;
+output [7:0] score;                       
 ///////// ////                     
 reg [18:0] ADDR;
 reg [23:0] bgr_data;
+reg clk_kp;
+integer i;
 wire VGA_CLK_n;
 wire [7:0] index;
 wire [23:0] bgr_data_raw;
 wire cBLANK_n,cHS,cVS,rst;
 
-wire j;
+wire[1:0] j;
 
 
 ////
@@ -71,14 +75,65 @@ img_index	img_index_inst (
 //////latch valid data at falling edge;
 //always@(posedge VGA_CLK_n) bgr_data <= bgr_data_raw;//change
 
+always @ (posedge VGA_CLK_n)
+begin
+	if(i < 2000000)
+	begin
+		i = i + 1;
+	end
+	
+	else
+	begin
+		i = 0;
+		clk_kp = ~clk_kp;
+	end;
+end
 
-mux_choose m1(ADDR, VGA_CLK_n, j, key_p, key_in);
+wire _press;
+reg press_m, counter;
+assign _press = press_m;
+
+always @ (posedge clk_kp or posedge key_p)
+begin
+	if(key_p == 1)
+	begin
+		press_m = 1;
+	end
+	
+	else if(clk_kp == 1)
+	begin	
+		if(counter == 1)
+		begin
+			counter = 0;
+			press_m = 0;
+		end
+		
+		else if(press_m == 1)
+		begin
+			counter = counter + 1;
+		end
+	end
+end
+		
+
+mux_choose m(ADDR, VGA_CLK_n, j, _press, key_in, score);
+
 always@(posedge VGA_CLK_n)
 begin
 
 	if(j == 1)
 	begin
+		bgr_data <= 24'h0000FF;
+	end
+	
+	else if(j == 2)
+	begin
 		bgr_data <= 24'h000000;
+	end
+	
+	else if(j == 3)
+	begin
+		bgr_data <= 24'hFF0000;
 	end
 	
 	else
