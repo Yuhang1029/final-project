@@ -21,7 +21,7 @@ output reg oVS;
 output [7:0] b_data;
 output [7:0] g_data;  
 output [7:0] r_data;
-output [7:0] score;                       
+output [7:0] score;                    
 ///////// ////                     
 reg [18:0] ADDR;
 reg [23:0] bgr_data;
@@ -31,9 +31,31 @@ wire VGA_CLK_n;
 wire [7:0] index;
 wire [23:0] bgr_data_raw;
 wire cBLANK_n,cHS,cVS,rst;
+wire _press;
+reg press_m, counter;
+assign _press = press_m;
 
 wire[1:0] j;
 
+initial
+begin
+	counter = 0;
+end
+
+
+always @ (posedge VGA_CLK_n)
+begin
+	if(i < 2000000)
+	begin
+		i = i + 1;
+	end
+	
+	else
+	begin
+		i = 0;
+		clk_kp = ~clk_kp;
+	end;
+end
 
 ////
 assign rst = ~iRST_n;
@@ -75,23 +97,6 @@ img_index	img_index_inst (
 //////latch valid data at falling edge;
 //always@(posedge VGA_CLK_n) bgr_data <= bgr_data_raw;//change
 
-always @ (posedge VGA_CLK_n)
-begin
-	if(i < 2000000)
-	begin
-		i = i + 1;
-	end
-	
-	else
-	begin
-		i = 0;
-		clk_kp = ~clk_kp;
-	end;
-end
-
-wire _press;
-reg press_m, counter;
-assign _press = press_m;
 
 always @ (posedge clk_kp or posedge key_p)
 begin
@@ -101,7 +106,7 @@ begin
 	end
 	
 	else if(clk_kp == 1)
-	begin	
+	begin
 		if(counter == 1)
 		begin
 			counter = 0;
@@ -112,9 +117,10 @@ begin
 		begin
 			counter = counter + 1;
 		end
+		
 	end
 end
-		
+
 
 mux_choose m(ADDR, VGA_CLK_n, j, _press, key_in, score);
 
